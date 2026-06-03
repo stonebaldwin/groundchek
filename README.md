@@ -124,10 +124,19 @@ cp .env apps/web/.dev.vars      # Worker local dev reads .dev.vars (same keys)
 # Database (needs a Neon DATABASE_URL with PostGIS):
 pnpm db:generate                # generate SQL migrations from Drizzle schema
 pnpm db:migrate                 # apply migrations (enables PostGIS, creates tables)
+pnpm db:seed                    # demo content + the Austin Socrata connector config
+
+# Load REAL data locally (no Worker deploy) — drives the Core engine against the
+# live Austin portal (Socrata 3syk-w9eu), back-sampling 12 months of permits:
+pnpm --filter @groundbreak/ingest ingest:local   # ~500 real permits into the DB
 
 # Develop the web app:
 pnpm dev                        # http://localhost:3000  (Next dev + OpenNext bindings)
 ```
+
+> When `DATABASE_URL` is set, the public pages (property / area / contractor / search /
+> landing) read live from Postgres + PostGIS; with it unset they fall back to a built-in
+> demo dataset so the app is reviewable with zero setup.
 
 Visit:
 
@@ -170,10 +179,13 @@ picks it up; no new code unless the portal is on a new platform. **Full guide:**
 
 The public app falls back to a built-in **demo dataset** when `DATABASE_URL` is unset,
 so `/`, `/property/*`, `/area/*`, `/contractor/*`, `/search`, and `/styleguide` are
-fully reviewable with zero setup (`pnpm dev`). With a database wired, `pnpm db:seed`
-loads the same demo content (plus the real Austin Socrata field-mapping config), the
-ingest worker (`apps/ingest`, `POST /run?jurisdiction=…&force=1`) backfills live data,
-and the operator cockpit at `/admin` shows ingestion health + freshness.
+fully reviewable with zero setup (`pnpm dev`). With a database wired, the public read
+path queries Postgres + PostGIS directly. `pnpm db:seed` loads the demo content plus
+the real Austin Socrata field-mapping config; `pnpm --filter @groundbreak/ingest
+ingest:local` pulls **real** Austin permits into the DB without deploying the Worker
+(neighborhood "areas" are then real ZIPs, computed live); the ingest worker
+(`apps/ingest`, `POST /run?jurisdiction=…&force=1`) is the production path; and the
+operator cockpit at `/admin` shows ingestion health + freshness.
 
 ## Build phases — all complete ✅
 
