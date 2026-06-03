@@ -15,6 +15,7 @@ import { listJurisdictions, searchPermits } from "@/lib/data/queries";
 import { getViewer } from "@/lib/viewer";
 import { SiteFooter } from "../_components/site-footer";
 import { SiteHeader } from "../_components/site-header";
+import { DetailBand, StampLabel } from "../_components/detail-band";
 import { SearchFiltersForm } from "./_components/filters";
 import { CoverageRequestForm } from "./_components/coverage-form";
 
@@ -61,9 +62,10 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto max-w-6xl px-6 py-8">
-        <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
-          <div>
+      <DetailBand width="max-w-6xl">
+        <header className="flex flex-wrap items-end justify-between gap-3">
+          <div className="space-y-1">
+            <StampLabel>Permit explorer</StampLabel>
             <h1 className="text-2xl font-semibold tracking-tight text-ink">Explore permits</h1>
             <p className="text-sm text-ink-muted">
               {results.total} permit{results.total === 1 ? "" : "s"} across covered markets.
@@ -85,7 +87,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
             </Link>
           )}
         </header>
-
+      </DetailBand>
+      <main className="mx-auto max-w-6xl px-6 py-8">
         <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
           <aside>
             <SearchFiltersForm

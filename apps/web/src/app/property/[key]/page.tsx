@@ -18,6 +18,7 @@ import { getViewer } from "@/lib/viewer";
 import { SiteFooter } from "../../_components/site-footer";
 import { SiteHeader } from "../../_components/site-header";
 import { PaywallNotice } from "../../_components/paywall";
+import { DetailBand, StampLabel } from "../../_components/detail-band";
 
 export const dynamicParams = true;
 
@@ -53,7 +54,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ key: 
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto max-w-4xl px-6 py-8">
+      <DetailBand>
         <nav className="mb-4 text-sm text-ink-muted">
           <Link href="/search" className="hover:text-ink">
             Explore
@@ -66,9 +67,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ key: 
 
         <header className="flex flex-wrap items-start justify-between gap-3">
           <div className="space-y-1">
-            <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">
-              Property permit history
-            </p>
+            <StampLabel>Property permit history</StampLabel>
             <h1 className="text-2xl font-semibold tracking-tight text-ink">{p.address}</h1>
             <p className="flex items-center gap-1.5 text-sm text-ink-muted">
               <MapPin className="size-4" />
@@ -99,7 +98,8 @@ export default async function PropertyPage({ params }: { params: Promise<{ key: 
             sublabel={p.lastPermitDate ?? undefined}
           />
         </div>
-
+      </DetailBand>
+      <main className="mx-auto max-w-4xl px-6 py-8">
         {p.lat && p.lng ? (
           <div className="mt-6 overflow-hidden rounded-xl border border-border">
             <PermitMap

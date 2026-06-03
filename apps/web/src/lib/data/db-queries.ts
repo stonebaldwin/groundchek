@@ -20,6 +20,7 @@ import {
 import {
   buildAreaSummary,
   buildContractorActivity,
+  contractorNameKey,
   type CanonicalPermit,
 } from "@groundbreak/core";
 import type {
@@ -62,6 +63,7 @@ const permitCols = {
   valuation: permits.valuation,
   contractorName: permits.contractorName,
   contractorLicense: permits.contractorLicense,
+  contractorId: permits.contractorId,
   appliedDate: permits.appliedDate,
   issuedDate: permits.issuedDate,
   completedDate: permits.completedDate,
@@ -80,6 +82,7 @@ type PermitRow = {
   valuation: number | null;
   contractorName: string | null;
   contractorLicense: string | null;
+  contractorId: string | null;
   appliedDate: Date | null;
   issuedDate: Date | null;
   completedDate: Date | null;
@@ -349,16 +352,29 @@ export async function getArea(id: string): Promise<AreaView | null> {
 
   const canonical = rows.map(rowToCanonical);
   const summary = buildAreaSummary({ areaKind: "zip", areaId: id, label, permits: canonical });
+
+  // Map "<nameKey>|<license>" → contractor uuid so the list can link to profiles.
+  const contractorIdByKey = new Map<string, string>();
+  for (const r of rows) {
+    if (r.contractorName && r.contractorId) {
+      const k = `${contractorNameKey(r.contractorName)}|${r.contractorLicense ?? ""}`;
+      if (!contractorIdByKey.has(k)) contractorIdByKey.set(k, r.contractorId);
+    }
+  }
   const topContractors: ContractorActivityEntry[] = buildContractorActivity(canonical)
     .slice(0, 8)
-    .map((c) => ({
-      name: c.name,
-      license: c.license,
-      permitCount: c.permitCount,
-      totalValuation: c.totalValuation,
-      jurisdictions: c.jurisdictions.map((jid) => jmap.get(jid)?.name ?? jid),
-      topProjectTypes: c.topProjectTypes,
-    }));
+    .map((c) => {
+      const cid = contractorIdByKey.get(`${contractorNameKey(c.name)}|${c.license ?? ""}`);
+      return {
+        name: c.name,
+        license: c.license,
+        permitCount: c.permitCount,
+        totalValuation: c.totalValuation,
+        jurisdictions: c.jurisdictions.map((jid) => jmap.get(jid)?.name ?? jid),
+        topProjectTypes: c.topProjectTypes,
+        href: cid ? `/contractor/${cid}` : undefined,
+      };
+    });
 
   return {
     id,

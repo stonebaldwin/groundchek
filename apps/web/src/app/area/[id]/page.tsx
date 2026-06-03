@@ -14,6 +14,7 @@ import { getViewer } from "@/lib/viewer";
 import { SiteFooter } from "../../_components/site-footer";
 import { SiteHeader } from "../../_components/site-header";
 import { PaywallNotice } from "../../_components/paywall";
+import { DetailBand, StampLabel } from "../../_components/detail-band";
 
 export const dynamicParams = true;
 
@@ -45,7 +46,7 @@ export default async function AreaPage({ params }: { params: Promise<{ id: strin
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto max-w-4xl px-6 py-8">
+      <DetailBand>
         <nav className="mb-4 text-sm text-ink-muted">
           <Link href="/search" className="hover:text-ink">
             Explore
@@ -55,9 +56,7 @@ export default async function AreaPage({ params }: { params: Promise<{ id: strin
 
         <header className="flex flex-wrap items-start justify-between gap-3">
           <div className="space-y-1">
-            <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">
-              Neighborhood construction activity
-            </p>
+            <StampLabel>Neighborhood construction activity</StampLabel>
             <h1 className="text-2xl font-semibold tracking-tight text-ink">{area.label}</h1>
             <div className="flex items-center gap-2 pt-1">
               <ActivityBadge level={area.activityLevel} />
@@ -71,8 +70,9 @@ export default async function AreaPage({ params }: { params: Promise<{ id: strin
             </div>
           </div>
         </header>
-
-        <section className="mt-6">
+      </DetailBand>
+      <main className="mx-auto max-w-4xl px-6 py-8">
+        <section className="mt-2">
           <AreaActivityCard data={area.summary} />
           <div className="mt-2">
             <SourceAttribution

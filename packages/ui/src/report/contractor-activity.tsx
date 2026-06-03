@@ -11,6 +11,8 @@ export interface ContractorActivityEntry {
   totalValuation?: number;
   jurisdictions?: string[];
   topProjectTypes?: ProjectType[];
+  /** When set, the contractor name links to its profile (e.g. /contractor/:id). */
+  href?: string;
 }
 
 export interface ContractorActivityListProps {
@@ -33,7 +35,13 @@ export function ContractorActivityList({ contractors, className }: ContractorAct
           </span>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-medium text-ink">{c.name}</span>
+              {c.href ? (
+                <a href={c.href} className="font-medium text-ink transition-colors hover:text-primary hover:underline">
+                  {c.name}
+                </a>
+              ) : (
+                <span className="font-medium text-ink">{c.name}</span>
+              )}
               {c.license ? (
                 <span className="font-mono text-xs text-ink-muted">{c.license}</span>
               ) : null}

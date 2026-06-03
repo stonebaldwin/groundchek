@@ -12,6 +12,7 @@ import {
 import { allContractorIds, getContractor } from "@/lib/data/queries";
 import { SiteFooter } from "../../_components/site-footer";
 import { SiteHeader } from "../../_components/site-header";
+import { DetailBand, StampLabel } from "../../_components/detail-band";
 
 export const dynamicParams = true;
 
@@ -41,7 +42,7 @@ export default async function ContractorPage({ params }: { params: Promise<{ id:
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto max-w-4xl px-6 py-8">
+      <DetailBand>
         <nav className="mb-4 text-sm text-ink-muted">
           <Link href="/search" className="hover:text-ink">
             Explore
@@ -54,6 +55,7 @@ export default async function ContractorPage({ params }: { params: Promise<{ id:
             <HardHat className="size-6" />
           </span>
           <div className="space-y-1">
+            <StampLabel>Contractor permit activity</StampLabel>
             <h1 className="text-2xl font-semibold tracking-tight text-ink">{c.name}</h1>
             <div className="flex flex-wrap items-center gap-2 text-sm text-ink-muted">
               {c.license ? <span className="font-mono">{c.license}</span> : null}
@@ -84,8 +86,9 @@ export default async function ContractorPage({ params }: { params: Promise<{ id:
           This is permit-activity data drawn from public records — not an endorsement, rating, or
           recommendation.
         </p>
-
-        <section className="mt-8 space-y-3">
+      </DetailBand>
+      <main className="mx-auto max-w-4xl px-6 py-8">
+        <section className="mt-2 space-y-3">
           <h2 className="text-lg font-semibold text-ink">Recent permits</h2>
           <PermitTimeline entries={c.recentPermits} />
         </section>
