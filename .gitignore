@@ -1,0 +1,31 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# builds
+.next/
+.open-next/
+dist/
+out/
+build/
+
+# cloudflare / wrangler
+.wrangler/
+.dev.vars
+.dev.vars.*
+wrangler.toml.bak
+
+# env
+.env
+.env.*
+!.env.example
+
+# misc
+.DS_Store
+*.log
+npm-debug.log*
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+.turbo/
+.vercel/

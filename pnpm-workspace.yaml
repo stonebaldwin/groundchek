@@ -1,0 +1,29 @@
+packages:
+  - "packages/*"
+  - "apps/*"
+
+# Allow native postinstall build scripts. esbuild powers tsx (db scripts) and the
+# OpenNext worker bundling; workerd powers local wrangler preview; sharp is Next's
+# image optimizer.
+allowBuilds:
+  esbuild: true
+  sharp: true
+  workerd: true
+
+# wrangler/miniflare are newer than pnpm's release-age gate; allow them through.
+minimumReleaseAgeExclude:
+  - miniflare@4.20260601.0
+  - wrangler@4.97.0
+  - '@better-auth/core@1.6.14'
+  - '@better-auth/drizzle-adapter@1.6.14'
+  - '@better-auth/kysely-adapter@1.6.14'
+  - '@better-auth/memory-adapter@1.6.14'
+  - '@better-auth/mongo-adapter@1.6.14'
+  - '@better-auth/prisma-adapter@1.6.14'
+  - '@better-auth/telemetry@1.6.14'
+  - better-auth@1.6.14
+
+# better-auth's kysely-adapter@1.6.14 still uses kysely's DEFAULT_MIGRATION_TABLE,
+# which kysely 0.29 removed — pin to the in-range 0.28.17 that still exports it.
+overrides:
+  kysely: 0.28.17

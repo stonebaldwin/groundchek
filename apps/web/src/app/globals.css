@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+/* Design tokens (shared @theme) from the design system. */
+@import "../../../../packages/ui/src/styles/theme.css";
+
+/* Scan app + design-system source so their utility classes are generated. */
+@source "../**/*.{ts,tsx}";
+@source "../../../../packages/ui/src/**/*.{ts,tsx}";
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background-color: color-mix(in oklab, var(--color-primary) 22%, transparent);
+  }
+}

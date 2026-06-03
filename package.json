@@ -1,0 +1,36 @@
+{
+  "name": "groundbreak",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Groundbreak — self-serve local building-permit intelligence. Monorepo: reusable public-data ingestion Core + web app, keyed to the parcel/address entity (the second product of a real-estate cluster, snaps together with Terrain on the shared property).",
+  "packageManager": "pnpm@11.4.0",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @groundbreak/web dev",
+    "build": "pnpm -r --filter ./packages/* run build && pnpm --filter @groundbreak/web build",
+    "typecheck": "pnpm -r run typecheck",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "pnpm -r --if-present run test",
+    "db:generate": "pnpm --filter @groundbreak/db run generate",
+    "db:migrate": "pnpm --filter @groundbreak/db run migrate",
+    "db:studio": "pnpm --filter @groundbreak/db run studio",
+    "db:seed": "pnpm --filter @groundbreak/db run seed",
+    "web:preview": "pnpm --filter @groundbreak/web run preview",
+    "web:deploy": "pnpm --filter @groundbreak/web run deploy",
+    "ingest:dev": "pnpm --filter @groundbreak/ingest run dev",
+    "ingest:deploy": "pnpm --filter @groundbreak/ingest run deploy"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.20.0",
+    "eslint": "^9.20.0",
+    "eslint-config-prettier": "^10.0.1",
+    "prettier": "^3.5.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.24.0"
+  }
+}

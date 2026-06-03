@@ -1,0 +1,70 @@
+/**
+ * Groundbreak design tokens (Tailwind v4, CSS-first).
+ *
+ * Import this from each app's globals.css *after* `@import "tailwindcss";`.
+ * Aesthetic: trustworthy property intelligence — a calmer Zillow meets Stripe.
+ * Warm off-white paper, near-black ink (shared with the real-estate cluster),
+ * one confident primary (blueprint blue) and a construction-amber accent. A
+ * graded, non-alarmist *activity* scale (calm blue → teal → ochre → clay → warm
+ * brick; never fire-engine red) grades neighborhood construction activity. The
+ * categorical permit/project-type palette lives in the design system's TS
+ * (`lib/project-type.ts`) since there are ~18 types — rendered as marker/badge
+ * hues rather than utility classes.
+ */
+@theme {
+  /* Surfaces & ink */
+  --color-paper: #f8f5ef;
+  --color-surface: #ffffff;
+  --color-surface-sunken: #f1ede4;
+  --color-ink: #1a1c20;
+  --color-ink-soft: #41454c;
+  --color-ink-muted: #747a83;
+  --color-border: #e6e1d6;
+  --color-border-strong: #d5cfc0;
+
+  /* Brand — blueprint blue + construction amber */
+  --color-primary: #1d5a8a;
+  --color-primary-hover: #174a73;
+  --color-primary-soft: #e3edf5;
+  --color-primary-foreground: #ffffff;
+  --color-accent: #c8823a;
+  --color-accent-soft: #f7ead6;
+
+  /* Graded, non-alarmist construction-activity scale */
+  --color-activity-quiet: #4f7fa3;
+  --color-activity-light: #3f8f8a;
+  --color-activity-moderate: #c2912f;
+  --color-activity-active: #c4733a;
+  --color-activity-hot: #b14a3e;
+  --color-activity-quiet-soft: #e6eef4;
+  --color-activity-light-soft: #e1f0ee;
+  --color-activity-moderate-soft: #f7eed5;
+  --color-activity-active-soft: #f6e6d9;
+  --color-activity-hot-soft: #f4ddda;
+
+  /* Semantic (derived) */
+  --color-success: #2f8f6b;
+  --color-success-soft: #e3f1ea;
+  --color-warning: #c2912f;
+  --color-warning-soft: #f7eed5;
+  --color-danger: #b14a3e;
+  --color-danger-soft: #f4ddda;
+  --color-info: #2f6f9b;
+  --color-info-soft: #e1ecf4;
+
+  /* Typography — next/font sets --font-inter / --font-jetbrains-mono on <html> */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, "SF Mono", monospace;
+
+  /* Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+
+  /* Elevation — soft, warm-tinted shadows */
+  --shadow-soft: 0 1px 2px rgba(26, 28, 32, 0.05);
+  --shadow-card: 0 1px 2px rgba(26, 28, 32, 0.04), 0 6px 20px rgba(26, 28, 32, 0.06);
+  --shadow-pop: 0 12px 40px rgba(26, 28, 32, 0.14);
+}

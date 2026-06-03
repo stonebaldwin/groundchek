@@ -1,0 +1,24 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "groundbreak-ingest",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-09-23",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true,
+  },
+  "triggers": {
+    // Per-cadence polling. Phase 6 selects jurisdictions due to run from
+    // `permit_datasets` and runs Socrata/ArcGIS connectors inline.
+    "crons": [
+      "0 7 * * *", // daily
+      "0 7 * * 1", // weekly (Monday)
+      "0 7 1 * *", // monthly (1st)
+    ],
+  },
+  // Phase 6 also wires:
+  //   - a Queue + Browser Rendering worker for the Accela/CARTO browser fallback
+  //   - the change-event → alert processor (Resend), respecting alert prefs
+  //   - operator health alerts on failed/anomalous/stale runs
+  // Secrets (set with `wrangler secret put NAME`): DATABASE_URL, RESEND_API_KEY.
+}

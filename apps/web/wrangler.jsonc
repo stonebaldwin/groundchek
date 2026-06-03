@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "groundbreak-web",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-09-23",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+  },
+  "observability": {
+    "enabled": true,
+  },
+  // Secrets (set with `wrangler secret put NAME`):
+  //   DATABASE_URL
+  // Vars/bindings (R2 for ISR cache, Stripe/Resend/Better Auth keys, etc.) are
+  // added in later phases.
+}
