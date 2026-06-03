@@ -114,6 +114,8 @@ export function createDrizzleIngestRepository(db: Database): IngestRepository {
           geom: coords ? sql`ST_SetSRID(ST_MakePoint(${input.lng}, ${input.lat}), 4326)` : null,
           parcelId: input.parcelId ?? null,
           jurisdictionId: input.jurisdictionId,
+          city: input.city ?? null,
+          zip: input.zip ?? null,
           county: input.county ?? null,
           state: input.state ?? null,
         })

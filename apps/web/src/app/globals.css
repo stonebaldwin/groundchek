@@ -17,7 +17,56 @@
   body {
     text-rendering: optimizeLegibility;
   }
+  /* Headings adopt the drafting display face for cohesion across every page. */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
   ::selection {
     background-color: color-mix(in oklab, var(--color-primary) 22%, transparent);
+  }
+}
+
+@layer components {
+  /* Faint blueprint grid on warm paper — structural, never loud. */
+  .blueprint-grid {
+    background-image:
+      linear-gradient(var(--color-blueprint-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-blueprint-line) 1px, transparent 1px);
+    background-size: 26px 26px;
+  }
+  /* The deep drafting band — navy with a luminous blueprint grid. */
+  .draft-grid {
+    background-color: var(--color-draft);
+    background-image:
+      linear-gradient(var(--color-draft-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-draft-line) 1px, transparent 1px);
+    background-size: 30px 30px;
+  }
+  /* Surveyor registration ticks at a box's corners. */
+  .tick-frame {
+    position: relative;
+  }
+  .tick-frame::before,
+  .tick-frame::after {
+    content: "";
+    position: absolute;
+    width: 9px;
+    height: 9px;
+    border-color: var(--color-accent);
+    border-style: solid;
+    pointer-events: none;
+  }
+  .tick-frame::before {
+    top: -1px;
+    left: -1px;
+    border-width: 1.5px 0 0 1.5px;
+  }
+  .tick-frame::after {
+    bottom: -1px;
+    right: -1px;
+    border-width: 0 1.5px 1.5px 0;
   }
 }

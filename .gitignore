@@ -20,6 +20,9 @@ wrangler.toml.bak
 .env.*
 !.env.example
 
+# local tooling
+.claude/
+
 # misc
 .DS_Store
 *.log

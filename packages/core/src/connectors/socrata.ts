@@ -44,9 +44,12 @@ export function createSocrataConnector(
         params.set("$limit", String(Math.min(PAGE_SIZE, max - offset)));
         params.set("$offset", String(offset));
         if (issuedCol) params.set("$order", `${issuedCol} DESC`);
+        const clauses: string[] = [];
         if (options.since && issuedCol) {
-          params.set("$where", `${issuedCol} >= '${options.since.toISOString().slice(0, 19)}'`);
+          clauses.push(`${issuedCol} >= '${options.since.toISOString().slice(0, 19)}'`);
         }
+        if (options.where) clauses.push(`(${options.where})`);
+        if (clauses.length > 0) params.set("$where", clauses.join(" AND "));
 
         const page = await httpJson<unknown>(
           config.jurisdictionId,

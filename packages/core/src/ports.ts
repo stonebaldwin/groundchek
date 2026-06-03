@@ -4,6 +4,8 @@ import type { CanonicalPermit, SourcePlatform, SyncStatus } from "./types";
 
 export interface ResolvePropertyInput extends ResolvedPropertyRef {
   jurisdictionId: string;
+  city?: string;
+  zip?: string;
   county?: string;
   state?: string;
 }

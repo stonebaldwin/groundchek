@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { sql } from "drizzle-orm";
 import { getDb } from "./client";
+import { AUSTIN_FIELD_MAPPING } from "./jurisdictions";
 import {
   areaAggregates,
   contractors,
@@ -18,22 +19,8 @@ import {
  * config. Re-runnable: upserts on natural keys.
  */
 
-// A real Austin "Issued Construction Permits" (Socrata 3syk-w9eu) field mapping.
-const AUSTIN_FIELD_MAPPING = {
-  permitNumber: { column: "permit_number" },
-  permitType: { column: "permit_type_desc", fallback: ["permit_class"] },
-  status: { column: "status_current" },
-  description: { column: "description" },
-  address: { column: "original_address1" },
-  latitude: { column: "latitude", type: "number" },
-  longitude: { column: "longitude", type: "number" },
-  valuation: { column: "total_job_valuation", type: "currency" },
-  contractorName: { column: "contractor_company_name" },
-  contractorLicense: { column: "contractor_trade" },
-  appliedDate: { column: "applied_date", type: "date" },
-  issuedDate: { column: "issued_date", type: "date" },
-  completedDate: { column: "completed_date", type: "date" },
-};
+// The real Austin "Issued Construction Permits" (Socrata 3syk-w9eu) field mapping
+// lives in ./jurisdictions (shared with the local ingestion runner).
 
 async function main() {
   const db = getDb();

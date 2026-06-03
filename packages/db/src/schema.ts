@@ -99,6 +99,8 @@ export const properties = pgTable(
     geom: geometry({ type: "point", mode: "xy", srid: 4326 }),
     parcelId: text(),
     jurisdictionId: text().references(() => jurisdictions.id),
+    city: text(),
+    zip: text(),
     county: text(),
     state: text(),
     createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
@@ -108,6 +110,7 @@ export const properties = pgTable(
     uniqueIndex("properties_address_key_idx").on(t.addressKey),
     index("properties_geom_idx").using("gist", t.geom),
     index("properties_jurisdiction_idx").on(t.jurisdictionId),
+    index("properties_zip_idx").on(t.zip),
   ],
 );
 

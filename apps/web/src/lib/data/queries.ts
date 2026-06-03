@@ -10,11 +10,13 @@ import type {
   PermitTimelineEntry,
 } from "@groundbreak/ui";
 import { isDbConfigured } from "../env";
+import * as dbq from "./db-queries";
 import { DEMO_AREAS, DEMO_JURISDICTIONS, DEMO_PROPERTIES, type DemoProperty } from "./demo";
 import type {
   AreaView,
   ContractorView,
   JurisdictionView,
+  PlatformStats,
   PropertyView,
   SearchFilters,
   SearchResults,
@@ -68,10 +70,28 @@ function latestDate(p: DemoProperty): string | undefined {
 // --- Public queries (demo-backed; DB when configured) -----------------------
 
 export async function listJurisdictions(): Promise<JurisdictionView[]> {
+  if (isDbConfigured()) return dbq.listJurisdictions();
   return DEMO_JURISDICTIONS;
 }
 
+export async function getPlatformStats(): Promise<PlatformStats> {
+  if (isDbConfigured()) return dbq.getPlatformStats();
+  const permits = DEMO_PROPERTIES.flatMap((p) => p.permits);
+  const zips = new Set(DEMO_PROPERTIES.map((p) => p.zip));
+  const contractors = new Set(permits.map((p) => p.contractorName).filter(Boolean));
+  const dates = DEMO_JURISDICTIONS.map((j) => j.dataCurrentAs).filter(Boolean).sort();
+  return {
+    permits: permits.length,
+    totalValuation: permits.reduce((s, p) => s + (p.valuation ?? 0), 0),
+    zips: zips.size,
+    contractors: contractors.size,
+    markets: DEMO_JURISDICTIONS.length,
+    dataCurrentAs: dates.at(-1),
+  };
+}
+
 export async function getProperty(key: string): Promise<PropertyView | null> {
+  if (isDbConfigured()) return dbq.getProperty(key);
   const demo = DEMO_PROPERTIES.find((p) => p.key === key);
   if (!demo) return null;
 
@@ -122,6 +142,7 @@ export async function getProperty(key: string): Promise<PropertyView | null> {
 export async function propertySuggestions(
   q: string,
 ): Promise<Array<{ key: string; label: string; sublabel?: string }>> {
+  if (isDbConfigured()) return dbq.propertySuggestions(q);
   const needle = q.trim().toLowerCase();
   if (needle.length < 2) return [];
   return DEMO_PROPERTIES.filter((p) => p.address.toLowerCase().includes(needle))
@@ -132,6 +153,7 @@ export async function propertySuggestions(
 const PAGE_SIZE = 20;
 
 export async function searchPermits(filters: SearchFilters): Promise<SearchResults> {
+  if (isDbConfigured()) return dbq.searchPermits(filters);
   const all = DEMO_PROPERTIES.flatMap((prop) =>
     prop.permits.map((permit) => ({ prop, permit })),
   );
@@ -165,11 +187,13 @@ export async function searchPermits(filters: SearchFilters): Promise<SearchResul
 }
 
 export async function listAreas(): Promise<AreaView[]> {
+  if (isDbConfigured()) return dbq.listAreas();
   const views = await Promise.all(DEMO_AREAS.map((a) => getArea(a.id)));
   return views.filter((v): v is AreaView => v !== null);
 }
 
 export async function getArea(id: string): Promise<AreaView | null> {
+  if (isDbConfigured()) return dbq.getArea(id);
   const demo = DEMO_AREAS.find((a) => a.id === id);
   if (!demo) return null;
 
@@ -209,6 +233,7 @@ function allDemoPermits(): Array<{ prop: DemoProperty; permit: CanonicalPermit }
 }
 
 export async function listContractors(): Promise<ContractorView[]> {
+  if (isDbConfigured()) return dbq.listContractors();
   const byId = new Map<string, ContractorView>();
   for (const { prop, permit } of allDemoPermits()) {
     if (!permit.contractorName) continue;
@@ -238,6 +263,7 @@ export async function listContractors(): Promise<ContractorView[]> {
 }
 
 export async function getContractor(id: string): Promise<ContractorView | null> {
+  if (isDbConfigured()) return dbq.getContractor(id);
   const all = await listContractors();
   const found = all.find((c) => c.id === id) ?? null;
   if (found) {
@@ -250,12 +276,15 @@ export async function getContractor(id: string): Promise<ContractorView | null> 
 // --- Static params + sitemap helpers ----------------------------------------
 
 export async function allPropertyKeys(): Promise<string[]> {
+  if (isDbConfigured()) return dbq.allPropertyKeys();
   return DEMO_PROPERTIES.map((p) => p.key);
 }
 export async function allAreaIds(): Promise<string[]> {
+  if (isDbConfigured()) return dbq.allAreaIds();
   return DEMO_AREAS.map((a) => a.id);
 }
 export async function allContractorIds(): Promise<string[]> {
+  if (isDbConfigured()) return dbq.allContractorIds();
   return (await listContractors()).map((c) => c.id);
 }
 

@@ -99,3 +99,12 @@ export interface SearchResults {
   page: number;
   pageSize: number;
 }
+
+export interface PlatformStats {
+  permits: number;
+  totalValuation: number;
+  zips: number;
+  contractors: number;
+  markets: number;
+  dataCurrentAs?: string;
+}

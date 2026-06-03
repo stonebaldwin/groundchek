@@ -109,6 +109,12 @@ export interface FetchOptions {
   since?: Date;
   limit?: number;
   signal?: AbortSignal;
+  /**
+   * Extra source-native predicate (e.g. a Socrata SoQL `$where`), AND-combined
+   * with the incremental `since` filter. Lets a run scope a dataset — a date
+   * window for back-sampling, "residential only", "has a valuation", etc.
+   */
+  where?: string;
 }
 
 /** Raw, un-normalized payload from one connector's `fetchRaw`. */

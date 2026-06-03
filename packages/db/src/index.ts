@@ -2,6 +2,7 @@ export { createDb, getDb, MissingDatabaseUrlError, type Database } from "./clien
 export * as schema from "./schema";
 export * from "./schema";
 export * from "./enums";
+export * from "./jurisdictions";
 
 // Convenience re-exports so apps don't need a direct drizzle-orm import for the basics.
 export {
