@@ -6,6 +6,10 @@ import { SiteFooter } from "./_components/site-footer";
 import { SiteHeader } from "./_components/site-header";
 import { PropertySearch } from "./_components/property-search";
 
+// Render per request so the deployed site reads live data from the runtime
+// DATABASE_URL (the OpenNext incremental cache for ISR isn't enabled yet).
+export const dynamic = "force-dynamic";
+
 const FEATURES = [
   {
     icon: Building2,

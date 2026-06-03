@@ -9,16 +9,12 @@ import {
   StatCard,
   formatCurrency,
 } from "@groundbreak/ui";
-import { allContractorIds, getContractor } from "@/lib/data/queries";
+import { getContractor } from "@/lib/data/queries";
 import { SiteFooter } from "../../_components/site-footer";
 import { SiteHeader } from "../../_components/site-header";
 import { DetailBand, StampLabel } from "../../_components/detail-band";
 
-export const dynamicParams = true;
-
-export async function generateStaticParams() {
-  return (await allContractorIds()).map((id) => ({ id }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,

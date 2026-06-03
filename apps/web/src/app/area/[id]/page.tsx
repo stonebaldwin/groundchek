@@ -9,18 +9,14 @@ import {
   PermitTimeline,
   SourceAttribution,
 } from "@groundbreak/ui";
-import { allAreaIds, getArea } from "@/lib/data/queries";
+import { getArea } from "@/lib/data/queries";
 import { getViewer } from "@/lib/viewer";
 import { SiteFooter } from "../../_components/site-footer";
 import { SiteHeader } from "../../_components/site-header";
 import { PaywallNotice } from "../../_components/paywall";
 import { DetailBand, StampLabel } from "../../_components/detail-band";
 
-export const dynamicParams = true;
-
-export async function generateStaticParams() {
-  return (await allAreaIds()).map((id) => ({ id }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,

@@ -13,18 +13,14 @@ import {
   formatCurrency,
   projectTypeMeta,
 } from "@groundbreak/ui";
-import { allPropertyKeys, getProperty } from "@/lib/data/queries";
+import { getProperty } from "@/lib/data/queries";
 import { getViewer } from "@/lib/viewer";
 import { SiteFooter } from "../../_components/site-footer";
 import { SiteHeader } from "../../_components/site-header";
 import { PaywallNotice } from "../../_components/paywall";
 import { DetailBand, StampLabel } from "../../_components/detail-band";
 
-export const dynamicParams = true;
-
-export async function generateStaticParams() {
-  return (await allPropertyKeys()).map((key) => ({ key }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
