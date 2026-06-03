@@ -102,29 +102,40 @@ export async function runJurisdiction(
     const date = permit.issuedDate ?? permit.completedDate ?? permit.appliedDate;
     if (date && (!latestIssued || date > latestIssued)) latestIssued = date;
 
-    const ref = resolvePropertyRef(permit);
-    const { id: propertyId } = await repo.resolveProperty({
-      ...ref,
-      jurisdictionId: config.jurisdictionId,
-    });
+    // A single row's DB failure must not abort the whole run — count it and
+    // continue, so the run always reaches finishSyncRun (no phantom "in-progress"
+    // sync_runs row, no corrupted next-run baseline).
+    try {
+      const ref = resolvePropertyRef(permit);
+      const { id: propertyId } = await repo.resolveProperty({
+        ...ref,
+        jurisdictionId: config.jurisdictionId,
+      });
 
-    const result = await repo.upsertPermit({ permit, propertyId });
-    const detectedAt = now().toISOString();
-    if (result.isNew) {
-      recordsNew++;
-      events.push(newPermitEvent(permit, { propertyId, permitId: result.permitId, detectedAt }));
-    } else {
-      recordsUpdated++;
-      if (result.statusChanged && result.previousStatus) {
-        events.push(
-          statusChangeEvent(permit, {
-            propertyId,
-            permitId: result.permitId,
-            previousStatus: result.previousStatus,
-            detectedAt,
-          }),
-        );
+      const result = await repo.upsertPermit({ permit, propertyId });
+      const detectedAt = now().toISOString();
+      if (result.isNew) {
+        recordsNew++;
+        events.push(newPermitEvent(permit, { propertyId, permitId: result.permitId, detectedAt }));
+      } else {
+        recordsUpdated++;
+        if (result.statusChanged && result.previousStatus) {
+          events.push(
+            statusChangeEvent(permit, {
+              propertyId,
+              permitId: result.permitId,
+              previousStatus: result.previousStatus,
+              detectedAt,
+            }),
+          );
+        }
       }
+    } catch (err) {
+      mappingFailures++;
+      console.error(
+        `[ingest] persist failed (${config.jurisdictionId} ${permit.permitNumber}):`,
+        err instanceof Error ? err.message : err,
+      );
     }
   }
 

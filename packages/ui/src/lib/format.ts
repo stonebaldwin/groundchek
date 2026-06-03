@@ -13,6 +13,10 @@ export function formatCurrency(
   if (value == null || Number.isNaN(value)) return "—";
   if (opts?.compact) {
     const abs = Math.abs(value);
+    if (abs >= 1_000_000_000) {
+      const b = value / 1_000_000_000;
+      return `$${b % 1 === 0 ? b.toFixed(0) : b.toFixed(1)}B`;
+    }
     if (abs >= 1_000_000) {
       const m = value / 1_000_000;
       return `$${m % 1 === 0 ? m.toFixed(0) : m.toFixed(1)}M`;

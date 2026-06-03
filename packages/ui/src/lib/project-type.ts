@@ -37,25 +37,28 @@ export interface ProjectTypeMeta {
   soft: string;
 }
 
+// `hex` darkened across the board so the badge label (rendered in `hex` on the
+// light `soft` tint) clears WCAG AA contrast; `soft` backgrounds are unchanged,
+// and the matching dot / map marker only reads more clearly when darker on light.
 export const PROJECT_TYPE_META: Record<ProjectType, ProjectTypeMeta> = {
-  new_construction: { type: "new_construction", label: "New construction", hex: "#2b6ca3", soft: "#e4eef6" },
-  addition: { type: "addition", label: "Addition", hex: "#2f8f8a", soft: "#e2f0ef" },
-  alteration: { type: "alteration", label: "Alteration / remodel", hex: "#5b6b86", soft: "#e9ebf1" },
-  adu: { type: "adu", label: "ADU", hex: "#7a5ea6", soft: "#eee7f4" },
-  roofing: { type: "roofing", label: "Roofing", hex: "#b4543e", soft: "#f6e3dd" },
-  solar: { type: "solar", label: "Solar", hex: "#caa023", soft: "#f8f0d4" },
-  hvac: { type: "hvac", label: "HVAC", hex: "#2f86a6", soft: "#e1eff5" },
-  electrical: { type: "electrical", label: "Electrical", hex: "#b07d1d", soft: "#f6ecd4" },
-  plumbing: { type: "plumbing", label: "Plumbing", hex: "#3f78b5", soft: "#e5edf7" },
-  mechanical: { type: "mechanical", label: "Mechanical", hex: "#6b7b8c", soft: "#ebeef1" },
-  demolition: { type: "demolition", label: "Demolition", hex: "#9c4633", soft: "#f3e0da" },
-  pool: { type: "pool", label: "Pool / spa", hex: "#2aa1ab", soft: "#def2f3" },
-  deck: { type: "deck", label: "Deck / patio", hex: "#9c7b4f", soft: "#f1eadd" },
-  fence: { type: "fence", label: "Fence / wall", hex: "#7f8a3f", soft: "#eef0dd" },
-  grading: { type: "grading", label: "Grading / site work", hex: "#8a6d4b", soft: "#efe7dc" },
-  sign: { type: "sign", label: "Sign", hex: "#8857a0", soft: "#efe6f3" },
-  fire: { type: "fire", label: "Fire / sprinkler", hex: "#b8453f", soft: "#f6dedc" },
-  other: { type: "other", label: "Other", hex: "#747a83", soft: "#eceef0" },
+  new_construction: { type: "new_construction", label: "New construction", hex: "#1f547f", soft: "#e4eef6" },
+  addition: { type: "addition", label: "Addition", hex: "#1f6b67", soft: "#e2f0ef" },
+  alteration: { type: "alteration", label: "Alteration / remodel", hex: "#46546b", soft: "#e9ebf1" },
+  adu: { type: "adu", label: "ADU", hex: "#5f4885", soft: "#eee7f4" },
+  roofing: { type: "roofing", label: "Roofing", hex: "#8f4030", soft: "#f6e3dd" },
+  solar: { type: "solar", label: "Solar", hex: "#806208", soft: "#f8f0d4" },
+  hvac: { type: "hvac", label: "HVAC", hex: "#226880", soft: "#e1eff5" },
+  electrical: { type: "electrical", label: "Electrical", hex: "#80570c", soft: "#f6ecd4" },
+  plumbing: { type: "plumbing", label: "Plumbing", hex: "#2d5e94", soft: "#e5edf7" },
+  mechanical: { type: "mechanical", label: "Mechanical", hex: "#515e6c", soft: "#ebeef1" },
+  demolition: { type: "demolition", label: "Demolition", hex: "#7c3526", soft: "#f3e0da" },
+  pool: { type: "pool", label: "Pool / spa", hex: "#1c7880", soft: "#def2f3" },
+  deck: { type: "deck", label: "Deck / patio", hex: "#735738", soft: "#f1eadd" },
+  fence: { type: "fence", label: "Fence / wall", hex: "#5d6529", soft: "#eef0dd" },
+  grading: { type: "grading", label: "Grading / site work", hex: "#685036", soft: "#efe7dc" },
+  sign: { type: "sign", label: "Sign", hex: "#6b4080", soft: "#efe6f3" },
+  fire: { type: "fire", label: "Fire / sprinkler", hex: "#8f332e", soft: "#f6dedc" },
+  other: { type: "other", label: "Other", hex: "#585e66", soft: "#eceef0" },
 };
 
 export function projectTypeMeta(type: ProjectType): ProjectTypeMeta {

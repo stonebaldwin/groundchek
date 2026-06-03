@@ -42,13 +42,11 @@ export async function GET() {
         checkedAt,
       });
     }
+    // Log detail server-side (Worker observability); don't leak driver/connection
+    // error text (internal hostnames, role names) to anonymous callers.
+    console.error("[health] database check failed:", err);
     return NextResponse.json(
-      {
-        status: "error",
-        database: "unreachable",
-        error: err instanceof Error ? err.message : String(err),
-        checkedAt,
-      },
+      { status: "error", database: "unreachable", checkedAt },
       { status: 503 },
     );
   }

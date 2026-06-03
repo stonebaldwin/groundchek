@@ -10,10 +10,13 @@
   "triggers": {
     // Per-cadence polling. Phase 6 selects jurisdictions due to run from
     // `permit_datasets` and runs Socrata/ArcGIS connectors inline.
+    // Staggered minutes so the daily/weekly/monthly triggers never fire in the
+    // same minute (e.g. Monday the 1st) — overlapping runs would race on `isDue`
+    // and ingest the same datasets concurrently.
     "crons": [
       "0 7 * * *", // daily
-      "0 7 * * 1", // weekly (Monday)
-      "0 7 1 * *", // monthly (1st)
+      "20 7 * * 1", // weekly (Monday)
+      "40 7 1 * *", // monthly (1st)
     ],
   },
   // Phase 6 also wires:

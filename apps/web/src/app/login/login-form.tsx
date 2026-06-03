@@ -11,6 +11,9 @@ export function LoginForm({ next }: { next: string }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  // Only honor same-site relative paths for ?next= — block open-redirects to
+  // external origins (e.g. ?next=https://evil.com or //evil.com).
+  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
 
   async function withPassword(e: React.FormEvent) {
     e.preventDefault();
@@ -20,7 +23,7 @@ export function LoginForm({ next }: { next: string }) {
     if (res.error) {
       toast({ title: "Sign-in failed", description: res.error.message ?? "Check your credentials.", tone: "danger" });
     } else {
-      router.push(next);
+      router.push(safeNext);
       router.refresh();
     }
   }
@@ -30,7 +33,7 @@ export function LoginForm({ next }: { next: string }) {
       toast({ title: "Enter your email first", tone: "warning" });
       return;
     }
-    const res = await signIn.magicLink({ email, callbackURL: next });
+    const res = await signIn.magicLink({ email, callbackURL: safeNext });
     if (res.error) {
       toast({ title: "Could not send link", description: res.error.message ?? "", tone: "danger" });
     } else {

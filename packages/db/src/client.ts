@@ -24,7 +24,7 @@ export class MissingDatabaseUrlError extends Error {
   }
 }
 
-let cached: Database | undefined;
+const clientCache = new Map<string, Database>();
 
 /**
  * Returns a process-cached database client. In a Worker isolate this is created
@@ -33,6 +33,12 @@ let cached: Database | undefined;
  */
 export function getDb(connectionString: string | undefined = process.env.DATABASE_URL): Database {
   if (!connectionString) throw new MissingDatabaseUrlError();
-  if (!cached) cached = createDb(connectionString);
-  return cached;
+  // Key the cache by connection string so a different URL (read replica, tests,
+  // a second tenant) never silently returns the first-created client.
+  let db = clientCache.get(connectionString);
+  if (!db) {
+    db = createDb(connectionString);
+    clientCache.set(connectionString, db);
+  }
+  return db;
 }

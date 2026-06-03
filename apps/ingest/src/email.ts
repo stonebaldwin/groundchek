@@ -33,9 +33,22 @@ export async function sendEmail(
   }
 }
 
+/** Escape untrusted text before embedding in email HTML. */
+export function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function shell(title: string, lines: string[]): string {
+  // `title` is always plain text → escape it. `lines` may contain intentional
+  // markup (links, <strong>), so callers are responsible for escaping any
+  // untrusted *data* they embed in a line (see alerts.ts).
   return `<div style="font-family:ui-sans-serif,system-ui,sans-serif;max-width:520px;color:#1a1c20">
-    <h2 style="color:#1d5a8a">${title}</h2>${lines.map((l) => `<p>${l}</p>`).join("")}
+    <h2 style="color:#1d5a8a">${escapeHtml(title)}</h2>${lines.map((l) => `<p>${l}</p>`).join("")}
     <p style="color:#747a83;font-size:12px;margin-top:24px">Groundbreak — local building-permit intelligence.</p>
   </div>`;
 }

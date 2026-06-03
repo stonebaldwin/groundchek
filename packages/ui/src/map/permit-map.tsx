@@ -134,13 +134,30 @@ export function PermitMap({
 
   return (
     <div
+      role="application"
+      aria-label={
+        marker?.label
+          ? `Interactive map of permits near ${marker.label}`
+          : "Interactive map of nearby building permits"
+      }
       className={cn("relative w-full overflow-hidden bg-surface-sunken", className)}
       style={{ height }}
     >
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm text-ink-muted">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm text-ink-muted"
+      >
         Loading map…
       </div>
       <div ref={containerRef} className="absolute inset-0" />
+      {/* Text alternative so the pin data isn't map-only for screen readers. */}
+      {permits.length > 0 ? (
+        <ul className="sr-only">
+          {permits.map((p) => (
+            <li key={p.id}>{p.label ?? `${p.projectType ?? "permit"} nearby`}</li>
+          ))}
+        </ul>
+      ) : null}
     </div>
   );
 }

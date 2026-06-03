@@ -10,9 +10,11 @@ import {
   formatCurrency,
 } from "@groundbreak/ui";
 import { getContractor } from "@/lib/data/queries";
+import { getViewer } from "@/lib/viewer";
 import { SiteFooter } from "../../_components/site-footer";
 import { SiteHeader } from "../../_components/site-header";
 import { DetailBand, StampLabel } from "../../_components/detail-band";
+import { PaywallNotice } from "../../_components/paywall";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +28,7 @@ export async function generateMetadata({
   if (!c) return { title: "Contractor not found" };
   return {
     title: `${c.name} — permit activity`,
-    description: `${c.name} has pulled ${c.permitCount} permits across ${c.jurisdictions.join(", ")} — project types, values, and recent permits from public records.`,
+    description: `${c.name} — contractor permit activity drawn from official public building-permit records.`,
   };
 }
 
@@ -34,6 +36,10 @@ export default async function ContractorPage({ params }: { params: Promise<{ id:
   const { id } = await params;
   const c = await getContractor(id);
   if (!c) notFound();
+
+  // Contractor intelligence is a Business-tier feature — gate the data server-side
+  // (consistent with the area-page contractor list), so it isn't readable for free.
+  const { entitlements: ent } = await getViewer();
 
   return (
     <>
@@ -57,23 +63,31 @@ export default async function ContractorPage({ params }: { params: Promise<{ id:
               {c.license ? <span className="font-mono">{c.license}</span> : null}
               <span>Active in {c.jurisdictions.join(", ")}</span>
             </div>
-            <div className="flex flex-wrap gap-1.5 pt-1">
-              {c.topProjectTypes.map((t) => (
-                <ProjectTypeBadge key={t} type={t} size="sm" />
-              ))}
-            </div>
+            {ent.contractorIntel ? (
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {c.topProjectTypes.map((t) => (
+                  <ProjectTypeBadge key={t} type={t} size="sm" />
+                ))}
+              </div>
+            ) : null}
           </div>
         </header>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-3">
-          <StatCard label="Permits pulled" value={c.permitCount} />
-          <StatCard
-            label="Total declared value"
-            value={formatCurrency(c.totalValuation, { compact: true })}
-            tone="text-primary"
-          />
-          <StatCard label="Markets" value={c.jurisdictions.length} sublabel={c.jurisdictions.join(", ")} />
-        </div>
+        {ent.contractorIntel ? (
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            <StatCard label="Permits pulled" value={c.permitCount} />
+            <StatCard
+              label="Total declared value"
+              value={formatCurrency(c.totalValuation, { compact: true })}
+              tone="text-primary"
+            />
+            <StatCard
+              label="Markets"
+              value={c.jurisdictions.length}
+              sublabel={c.jurisdictions.join(", ")}
+            />
+          </div>
+        ) : null}
 
         <p className="mt-4 text-xs text-ink-muted">
           <Badge variant="outline" className="mr-1.5">
@@ -84,10 +98,18 @@ export default async function ContractorPage({ params }: { params: Promise<{ id:
         </p>
       </DetailBand>
       <main className="mx-auto max-w-4xl px-6 py-8">
-        <section className="mt-2 space-y-3">
-          <h2 className="text-lg font-semibold text-ink">Recent permits</h2>
-          <PermitTimeline entries={c.recentPermits} />
-        </section>
+        {ent.contractorIntel ? (
+          <section className="mt-2 space-y-3">
+            <h2 className="text-lg font-semibold text-ink">Recent permits</h2>
+            <PermitTimeline entries={c.recentPermits} />
+          </section>
+        ) : (
+          <PaywallNotice
+            title="Contractor intelligence is a Business feature"
+            description="See a contractor's full permit volume, declared value, project-type mix, and recent permits across markets — built for brokerages, suppliers, and competitive research."
+            cta="See Business plan"
+          />
+        )}
       </main>
       <SiteFooter />
     </>

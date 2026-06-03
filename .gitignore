@@ -27,7 +27,11 @@ wrangler.toml.bak
 .DS_Store
 *.log
 npm-debug.log*
-coverage/
+# Root-anchored so it ignores test-coverage output WITHOUT swallowing the
+# `app/api/coverage/` route directory.
+/coverage/
+packages/*/coverage/
+apps/*/coverage/
 *.tsbuildinfo
 next-env.d.ts
 .turbo/

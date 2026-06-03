@@ -46,16 +46,18 @@ function jurisdictionStatusFor(status?: SyncStatus): "active" | "broken" | "stal
  * idempotent by natural keys (address slug, jurisdiction+permit number).
  */
 export function createDrizzleIngestRepository(db: Database): IngestRepository {
+  /** Find-or-create a contractor by (nameKey, license). Does NOT touch the
+   *  denormalized counters — those are recomputed idempotently after the permit
+   *  is linked (see `recomputeContractor`), so re-ingesting never drifts them. */
   async function resolveContractor(
     name: string,
     license: string | undefined,
     jurisdictionId: string,
-    valuation: number | undefined,
   ): Promise<string | null> {
     const nameKey = contractorNameKey(name);
     if (!nameKey) return null;
     const found = await db
-      .select({ id: contractors.id, jurisdictions: contractors.jurisdictions })
+      .select({ id: contractors.id })
       .from(contractors)
       .where(
         and(
@@ -64,21 +66,7 @@ export function createDrizzleIngestRepository(db: Database): IngestRepository {
         ),
       )
       .limit(1);
-
-    if (found[0]) {
-      const list = new Set(found[0].jurisdictions ?? []);
-      list.add(jurisdictionId);
-      await db
-        .update(contractors)
-        .set({
-          permitCount: sql`${contractors.permitCount} + 1`,
-          totalValuation: sql`${contractors.totalValuation} + ${valuation ?? 0}`,
-          jurisdictions: [...list],
-          updatedAt: sql`now()`,
-        })
-        .where(eq(contractors.id, found[0].id));
-      return found[0].id;
-    }
+    if (found[0]) return found[0].id;
 
     const inserted = await db
       .insert(contractors)
@@ -87,11 +75,49 @@ export function createDrizzleIngestRepository(db: Database): IngestRepository {
         nameKey,
         license: license ?? null,
         jurisdictions: [jurisdictionId],
-        permitCount: 1,
-        totalValuation: valuation ?? 0,
+        permitCount: 0,
+        totalValuation: 0,
       })
       .returning({ id: contractors.id });
     return inserted[0]?.id ?? null;
+  }
+
+  /**
+   * Recompute a contractor's denormalized aggregates (permitCount, totalValuation,
+   * topProjectTypes, jurisdictions) from its actual permits. Idempotent — running
+   * it after every upsert means re-ingesting the same data yields the same numbers
+   * with no unbounded drift (the prior `+1`-per-upsert approach double-counted on
+   * every overlapping cron sync).
+   */
+  async function recomputeContractor(contractorId: string): Promise<void> {
+    const [agg] = await db
+      .select({
+        n: sql<number>`count(*)::int`,
+        total: sql<number>`coalesce(sum(${permits.valuation}), 0)::float8`,
+      })
+      .from(permits)
+      .where(eq(permits.contractorId, contractorId));
+    const types = await db
+      .select({ t: permits.projectType })
+      .from(permits)
+      .where(eq(permits.contractorId, contractorId))
+      .groupBy(permits.projectType)
+      .orderBy(sql`count(*) DESC`)
+      .limit(4);
+    const jurs = await db
+      .selectDistinct({ j: permits.jurisdictionId })
+      .from(permits)
+      .where(eq(permits.contractorId, contractorId));
+    await db
+      .update(contractors)
+      .set({
+        permitCount: agg?.n ?? 0,
+        totalValuation: agg?.total ?? 0,
+        topProjectTypes: types.map((x) => x.t),
+        jurisdictions: jurs.map((x) => x.j),
+        updatedAt: sql`now()`,
+      })
+      .where(eq(contractors.id, contractorId));
   }
 
   return {
@@ -129,7 +155,7 @@ export function createDrizzleIngestRepository(db: Database): IngestRepository {
 
     async upsertPermit({ permit, propertyId }): Promise<UpsertPermitResult> {
       const contractorId = permit.contractorName
-        ? await resolveContractor(permit.contractorName, permit.contractorLicense, permit.jurisdictionId, permit.valuation)
+        ? await resolveContractor(permit.contractorName, permit.contractorLicense, permit.jurisdictionId)
         : null;
 
       const existing = await db
@@ -164,27 +190,33 @@ export function createDrizzleIngestRepository(db: Database): IngestRepository {
         updatedAt: sql`now()`,
       };
 
+      let result: UpsertPermitResult;
       if (existing[0]) {
         const previousStatus = existing[0].status;
         await db.update(permits).set(common).where(eq(permits.id, existing[0].id));
-        return {
+        result = {
           permitId: existing[0].id,
           isNew: false,
           statusChanged: previousStatus !== permit.status,
           previousStatus,
         };
+      } else {
+        const inserted = await db
+          .insert(permits)
+          .values({
+            propertyId,
+            jurisdictionId: permit.jurisdictionId,
+            permitNumber: permit.permitNumber,
+            ...common,
+          })
+          .returning({ id: permits.id });
+        result = { permitId: inserted[0]!.id, isNew: true, statusChanged: false };
       }
 
-      const inserted = await db
-        .insert(permits)
-        .values({
-          propertyId,
-          jurisdictionId: permit.jurisdictionId,
-          permitNumber: permit.permitNumber,
-          ...common,
-        })
-        .returning({ id: permits.id });
-      return { permitId: inserted[0]!.id, isNew: true, statusChanged: false };
+      // Recompute the contractor's denormalized aggregates now that this permit is
+      // linked — keeps permitCount/value/types correct and idempotent across re-runs.
+      if (contractorId) await recomputeContractor(contractorId);
+      return result;
     },
 
     async recordEvents(events: PersistableEvent[]) {

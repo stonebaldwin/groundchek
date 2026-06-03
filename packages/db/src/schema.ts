@@ -132,6 +132,8 @@ export const contractors = pgTable(
   (t) => [
     index("contractors_name_key_idx").on(t.nameKey),
     index("contractors_license_idx").on(t.license),
+    // listContractors / allContractorIds order by permit_count DESC.
+    index("contractors_permit_count_idx").on(t.permitCount),
   ],
 );
 
@@ -174,9 +176,12 @@ export const permits = pgTable(
   (t) => [
     uniqueIndex("permits_natural_key_idx").on(t.jurisdictionId, t.permitNumber),
     index("permits_property_idx").on(t.propertyId),
-    index("permits_jurisdiction_idx").on(t.jurisdictionId),
-    index("permits_project_type_idx").on(t.projectType),
-    index("permits_status_idx").on(t.status),
+    // Composite (facet, issued_date) indexes back the common search pattern
+    // "filter by facet ORDER BY issued_date" from one index (Postgres scans the
+    // btree backwards for DESC). They supersede the single-column facet indexes.
+    index("permits_jurisdiction_issued_idx").on(t.jurisdictionId, t.issuedDate),
+    index("permits_project_type_issued_idx").on(t.projectType, t.issuedDate),
+    index("permits_status_issued_idx").on(t.status, t.issuedDate),
     index("permits_issued_idx").on(t.issuedDate),
     index("permits_contractor_idx").on(t.contractorId),
     index("permits_geom_idx").using("gist", t.geom),
@@ -493,7 +498,13 @@ export const alerts = pgTable(
     status: text().default("sent").notNull(),
     sentAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
   },
-  (t) => [index("alerts_user_idx").on(t.userId)],
+  (t) => [
+    index("alerts_user_idx").on(t.userId),
+    // Idempotent dispatch: one alert per (event, subscription) so re-processing a
+    // partially-sent batch can't double-email. (NULLs are distinct in Postgres,
+    // so non-event alerts are unaffected.)
+    uniqueIndex("alerts_event_subscription_idx").on(t.permitEventId, t.alertSubscriptionId),
+  ],
 );
 
 export const coverageRequests = pgTable("coverage_requests", {

@@ -41,11 +41,13 @@ export function CoverageRequestForm({ defaultMarket = "" }: { defaultMarket?: st
       <Input
         type="email"
         required
+        aria-label="Email address"
         placeholder="you@example.com"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
       <Input
+        aria-label="City or ZIP"
         placeholder="City / ZIP"
         value={market}
         onChange={(e) => setMarket(e.target.value)}

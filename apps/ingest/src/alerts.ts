@@ -1,5 +1,5 @@
 import { and, createDb, eq, schema, sql } from "@groundbreak/db";
-import { sendAlertEmail, type MailEnv } from "./email";
+import { escapeHtml, sendAlertEmail, type MailEnv } from "./email";
 
 export interface AlertEnv extends MailEnv {
   DATABASE_URL: string;
@@ -30,14 +30,26 @@ export async function processAlerts(env: AlertEnv, limit = 100): Promise<number>
     const subscribers = await subscribersFor(db, ev);
     const link = await linkFor(db, env, ev.propertyId, ev.jurisdictionId);
 
+    const safeSummary = escapeHtml(ev.summary);
     for (const s of subscribers) {
-      await sendAlertEmail(env, s.email, ev.summary, [ev.summary, `<a href="${link}">View on Groundbreak</a>`]);
-      await db.insert(schema.alerts).values({
-        userId: s.userId,
-        alertSubscriptionId: s.subscriptionId,
-        permitEventId: ev.id,
-        subject: ev.summary,
-      });
+      // Claim the (event, subscription) first; the unique index makes this the
+      // idempotency gate. If it was already claimed (conflict → no row), the email
+      // already went out on a prior pass — skip the re-send.
+      const claimed = await db
+        .insert(schema.alerts)
+        .values({
+          userId: s.userId,
+          alertSubscriptionId: s.subscriptionId,
+          permitEventId: ev.id,
+          subject: ev.summary,
+        })
+        .onConflictDoNothing()
+        .returning({ id: schema.alerts.id });
+      if (claimed.length === 0) continue;
+      await sendAlertEmail(env, s.email, ev.summary, [
+        safeSummary,
+        `<a href="${link}">View on Groundbreak</a>`,
+      ]);
       delivered++;
     }
 

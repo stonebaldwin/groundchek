@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "../_components/site-header";
+import { SiteFooter } from "../_components/site-footer";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = { title: "Sign in" };
@@ -18,6 +19,7 @@ export default async function LoginPage({
         <p className="mb-6 text-sm text-ink-muted">Sign in to your Groundbreak account.</p>
         <LoginForm next={next ?? "/dashboard"} />
       </main>
+      <SiteFooter />
     </>
   );
 }

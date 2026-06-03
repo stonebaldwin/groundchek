@@ -5,6 +5,7 @@
  * ZIP-level, computed live from `permits` joined to `properties` via the Core's
  * analytics (the same `buildAreaSummary` the ingestion rollup uses).
  */
+import { cache } from "react";
 import {
   and,
   desc,
@@ -17,12 +18,7 @@ import {
   schema,
   sql,
 } from "@groundbreak/db";
-import {
-  buildAreaSummary,
-  buildContractorActivity,
-  contractorNameKey,
-  type CanonicalPermit,
-} from "@groundbreak/core";
+import { buildAreaSummary, type CanonicalPermit } from "@groundbreak/core";
 import type {
   AreaActivityData,
   ContractorActivityEntry,
@@ -137,7 +133,7 @@ type JurRow = {
   dataCurrentAs: Date | null;
 };
 
-async function loadJurisdictions(): Promise<Map<string, JurRow>> {
+async function loadJurisdictionsImpl(): Promise<Map<string, JurRow>> {
   const rows = await db()
     .select({
       id: jurisdictions.id,
@@ -181,15 +177,22 @@ function summaryToActivityData(
   };
 }
 
-/** All permits in a ZIP (joined through properties), newest first. */
+/**
+ * Permits in a ZIP (joined through properties), newest first, bounded to the last
+ * 24 months. The 24-month window is everything the trailing-12 + YoY analytics need;
+ * bounding by date (instead of an arbitrary LIMIT 5000) avoids silently truncating —
+ * and undercounting — the busiest ZIPs, while keeping the transfer small.
+ */
 async function permitsInZip(zip: string): Promise<PermitRow[]> {
   return (await db()
     .select(permitCols)
     .from(permits)
     .innerJoin(properties, eq(properties.id, permits.propertyId))
-    .where(eq(properties.zip, zip))
+    .where(
+      and(eq(properties.zip, zip), sql`${permits.issuedDate} >= now() - interval '24 months'`),
+    )
     .orderBy(desc(permits.issuedDate))
-    .limit(5000)) as PermitRow[];
+    .limit(6000)) as PermitRow[];
 }
 
 async function areaActivityForZip(zip: string, city?: string): Promise<AreaActivityData | undefined> {
@@ -270,7 +273,7 @@ export async function getPlatformStats(): Promise<PlatformStats> {
   };
 }
 
-export async function getProperty(key: string): Promise<PropertyView | null> {
+async function getPropertyImpl(key: string): Promise<PropertyView | null> {
   const [prop] = await db().select().from(properties).where(eq(properties.addressKey, key)).limit(1);
   if (!prop) return null;
 
@@ -338,7 +341,7 @@ export async function getProperty(key: string): Promise<PropertyView | null> {
   };
 }
 
-export async function getArea(id: string): Promise<AreaView | null> {
+async function getAreaImpl(id: string): Promise<AreaView | null> {
   const rows = await permitsInZip(id);
   if (rows.length === 0) return null;
 
@@ -354,28 +357,51 @@ export async function getArea(id: string): Promise<AreaView | null> {
   const canonical = rows.map(rowToCanonical);
   const summary = buildAreaSummary({ areaKind: "zip", areaId: id, label, permits: canonical });
 
-  // Map "<nameKey>|<license>" → contractor uuid so the list can link to profiles.
-  const contractorIdByKey = new Map<string, string>();
+  // Roll up top contractors directly by contractor id, so every entry carries a
+  // reliable profile link (no fragile name|license key reconstruction).
+  type Agg = {
+    name: string;
+    license?: string;
+    count: number;
+    value: number;
+    types: Map<ProjectType, number>;
+    jurs: Set<string>;
+  };
+  const byContractor = new Map<string, Agg>();
   for (const r of rows) {
-    if (r.contractorName && r.contractorId) {
-      const k = `${contractorNameKey(r.contractorName)}|${r.contractorLicense ?? ""}`;
-      if (!contractorIdByKey.has(k)) contractorIdByKey.set(k, r.contractorId);
-    }
-  }
-  const topContractors: ContractorActivityEntry[] = buildContractorActivity(canonical)
-    .slice(0, 8)
-    .map((c) => {
-      const cid = contractorIdByKey.get(`${contractorNameKey(c.name)}|${c.license ?? ""}`);
-      return {
-        name: c.name,
-        license: c.license,
-        permitCount: c.permitCount,
-        totalValuation: c.totalValuation,
-        jurisdictions: c.jurisdictions.map((jid) => jmap.get(jid)?.name ?? jid),
-        topProjectTypes: c.topProjectTypes,
-        href: cid ? `/contractor/${cid}` : undefined,
+    if (!r.contractorId || !r.contractorName) continue;
+    let e = byContractor.get(r.contractorId);
+    if (!e) {
+      e = {
+        name: r.contractorName,
+        license: r.contractorLicense ?? undefined,
+        count: 0,
+        value: 0,
+        types: new Map(),
+        jurs: new Set(),
       };
-    });
+      byContractor.set(r.contractorId, e);
+    }
+    e.count++;
+    e.value += r.valuation ?? 0;
+    e.jurs.add(r.jurisdictionId);
+    e.types.set(r.projectType, (e.types.get(r.projectType) ?? 0) + 1);
+  }
+  const topContractors: ContractorActivityEntry[] = [...byContractor.entries()]
+    .map(([cid, e]) => ({
+      name: e.name,
+      license: e.license,
+      permitCount: e.count,
+      totalValuation: e.value,
+      jurisdictions: [...e.jurs].map((jid) => jmap.get(jid)?.name ?? jid),
+      topProjectTypes: [...e.types.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([t]) => t),
+      href: `/contractor/${cid}`,
+    }))
+    .sort((a, b) => b.permitCount - a.permitCount)
+    .slice(0, 8);
 
   return {
     id,
@@ -403,7 +429,7 @@ export async function listAreas(): Promise<AreaView[]> {
   return views.filter((v): v is AreaView => v !== null);
 }
 
-export async function getContractor(id: string): Promise<ContractorView | null> {
+async function getContractorImpl(id: string): Promise<ContractorView | null> {
   const [c] = await db().select().from(contractors).where(eq(contractors.id, id)).limit(1);
   if (!c) return null;
 
@@ -494,6 +520,7 @@ export async function searchPermits(filters: SearchFilters): Promise<SearchResul
   const totalRows = await db()
     .select({ total: sql<number>`count(*)::int` })
     .from(permits)
+    .innerJoin(properties, eq(properties.id, permits.propertyId))
     .where(where);
   const total = totalRows[0]?.total ?? 0;
 
@@ -556,3 +583,12 @@ export async function allContractorIds(): Promise<string[]> {
     .limit(500);
   return rows.map((r) => r.id);
 }
+
+// --- Per-request memoization (React cache) -----------------------------------
+// Dedupes calls within a single request render: `loadJurisdictions` was hit ~10×
+// on the landing page; detail pages fetch the same record twice (generateMetadata
+// + body). Each collapses to one query set per request.
+const loadJurisdictions = cache(loadJurisdictionsImpl);
+export const getProperty = cache(getPropertyImpl);
+export const getArea = cache(getAreaImpl);
+export const getContractor = cache(getContractorImpl);

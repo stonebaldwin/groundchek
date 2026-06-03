@@ -1,9 +1,12 @@
 import type { MetadataRoute } from "next";
-import { appUrl } from "@/lib/env";
+import { requestBaseUrl } from "@/lib/base-url";
 
-export default function robots(): MetadataRoute.Robots {
+export const dynamic = "force-dynamic";
+
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  const base = await requestBaseUrl();
   return {
     rules: [{ userAgent: "*", allow: "/", disallow: ["/dashboard", "/admin", "/api/"] }],
-    sitemap: appUrl("/sitemap.xml"),
+    sitemap: `${base}/sitemap.xml`,
   };
 }

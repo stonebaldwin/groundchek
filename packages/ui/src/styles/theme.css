@@ -18,7 +18,9 @@
   --color-surface-sunken: #ece6da;
   --color-ink: #14181c;
   --color-ink-soft: #3b424a;
-  --color-ink-muted: #6e757e;
+  /* Darkened to clear WCAG AA (4.5:1) for the small secondary text it's used for,
+     on both `paper` and `surface-sunken`. */
+  --color-ink-muted: #5b626b;
   --color-border: #e3ddcf;
   --color-border-strong: #cfc8b6;
 
@@ -27,8 +29,9 @@
   --color-primary-hover: #0e3f63;
   --color-primary-soft: #dfeaf3;
   --color-primary-foreground: #ffffff;
-  --color-accent: #d96a1f;
-  --color-accent-hover: #bd5a16;
+  /* Accent darkened slightly so white button text clears AA at button sizes. */
+  --color-accent: #c25f15;
+  --color-accent-hover: #a64f10;
   --color-accent-soft: #f8e5d1;
   --color-accent-foreground: #ffffff;
 
@@ -43,24 +46,27 @@
   --color-blueprint-line-strong: rgba(20, 82, 126, 0.14);
   --color-draft-line: rgba(155, 196, 226, 0.14);
 
-  /* Graded, non-alarmist construction-activity scale */
-  --color-activity-quiet: #4f7fa3;
-  --color-activity-light: #3f8f8a;
-  --color-activity-moderate: #c2912f;
-  --color-activity-active: #c4733a;
-  --color-activity-hot: #b14a3e;
+  /* Graded, non-alarmist construction-activity scale. Hues darkened so the badge
+     LABEL text clears WCAG AA on the light `*-soft` tints below (dots/markers use
+     the same value and only read better when darker on light surfaces). */
+  --color-activity-quiet: #3a627f;
+  --color-activity-light: #2c6660;
+  --color-activity-moderate: #876411;
+  --color-activity-active: #934f26;
+  --color-activity-hot: #8f352b;
   --color-activity-quiet-soft: #e6eef4;
   --color-activity-light-soft: #e1f0ee;
   --color-activity-moderate-soft: #f7eed5;
   --color-activity-active-soft: #f6e6d9;
   --color-activity-hot-soft: #f4ddda;
 
-  /* Semantic (derived) */
-  --color-success: #2f8f6b;
+  /* Semantic (derived). Text tones darkened to clear AA on their soft tints —
+     these render as badge/label text on `*-soft` backgrounds. */
+  --color-success: #1f7a57;
   --color-success-soft: #e3f1ea;
-  --color-warning: #b9842a;
+  --color-warning: #8a6113;
   --color-warning-soft: #f7eed5;
-  --color-danger: #b14a3e;
+  --color-danger: #a8392d;
   --color-danger-soft: #f4ddda;
   --color-info: #2f6f9b;
   --color-info-soft: #e1ecf4;

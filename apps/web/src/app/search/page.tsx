@@ -72,12 +72,16 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
             </p>
           </div>
           {viewer.entitlements.exports ? (
-            <Link
-              href="#"
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border-strong px-3 text-sm font-medium text-ink hover:bg-surface-sunken"
+            <span
+              title="CSV export is coming soon"
+              aria-disabled="true"
+              className="inline-flex h-9 cursor-not-allowed items-center gap-1.5 rounded-lg border border-border-strong px-3 text-sm font-medium text-ink-muted"
             >
               <Download className="size-4" /> Export CSV
-            </Link>
+              <span className="ml-0.5 rounded bg-surface-sunken px-1 py-0.5 text-[0.6rem] uppercase tracking-wide">
+                soon
+              </span>
+            </span>
           ) : (
             <Link
               href="/pricing"

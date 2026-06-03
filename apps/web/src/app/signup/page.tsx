@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "../_components/site-header";
+import { SiteFooter } from "../_components/site-footer";
 import { SignupForm } from "./signup-form";
 import type { Plan } from "@/lib/entitlements";
 
@@ -22,6 +23,7 @@ export default async function SignupPage({
         </p>
         <SignupForm plan={selected} />
       </main>
+      <SiteFooter />
     </>
   );
 }
