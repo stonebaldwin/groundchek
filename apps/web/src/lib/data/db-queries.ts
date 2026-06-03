@@ -100,6 +100,7 @@ function rowToTimeline(r: PermitRow, id?: string): PermitTimelineEntry {
     valuation: r.valuation ?? undefined,
     contractorName: r.contractorName ?? undefined,
     contractorLicense: r.contractorLicense ?? undefined,
+    contractorHref: r.contractorId ? `/contractor/${r.contractorId}` : undefined,
     appliedDate: iso(r.appliedDate),
     issuedDate: iso(r.issuedDate),
     sourceUrl: r.sourceUrl,

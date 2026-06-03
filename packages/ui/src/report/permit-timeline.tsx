@@ -15,6 +15,8 @@ export interface PermitTimelineEntry {
   valuation?: number;
   contractorName?: string;
   contractorLicense?: string;
+  /** When set, the contractor name links to its profile (e.g. /contractor/:id). */
+  contractorHref?: string;
   appliedDate?: string;
   issuedDate?: string;
   sourceUrl?: string;
@@ -68,7 +70,16 @@ export function PermitTimeline({ entries, className }: PermitTimelineProps) {
                 {e.contractorName ? (
                   <span className="inline-flex items-center gap-1.5 text-xs text-ink-muted">
                     <HardHat className="size-3.5" aria-hidden="true" />
-                    {e.contractorName}
+                    {e.contractorHref ? (
+                      <a
+                        href={e.contractorHref}
+                        className="text-ink-soft transition-colors hover:text-primary hover:underline"
+                      >
+                        {e.contractorName}
+                      </a>
+                    ) : (
+                      e.contractorName
+                    )}
                     {e.contractorLicense ? (
                       <span className="font-mono">· {e.contractorLicense}</span>
                     ) : null}
