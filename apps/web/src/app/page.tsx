@@ -6,9 +6,11 @@ import { SiteFooter } from "./_components/site-footer";
 import { SiteHeader } from "./_components/site-header";
 import { PropertySearch } from "./_components/property-search";
 
-// Render per request so the deployed site reads live data from the runtime
-// DATABASE_URL (the OpenNext incremental cache for ISR isn't enabled yet).
-export const dynamic = "force-dynamic";
+// ISR: prerender then revalidate hourly, served from the R2-backed edge cache
+// instead of re-querying the database on every request. Safe to cache because the
+// landing reads no per-user data (no cookies) — the detail pages stay dynamic
+// since they read the session for entitlement gating.
+export const revalidate = 3600;
 
 const FEATURES = [
   {

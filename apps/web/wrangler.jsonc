@@ -11,8 +11,14 @@
   "observability": {
     "enabled": true,
   },
-  // Secrets (set with `wrangler secret put NAME`):
-  //   DATABASE_URL
-  // Vars/bindings (R2 for ISR cache, Stripe/Resend/Better Auth keys, etc.) are
-  // added in later phases.
+  // R2 bucket backing the OpenNext incremental cache (ISR). The binding name
+  // `NEXT_INC_CACHE_R2_BUCKET` is what @opennextjs/cloudflare's r2-incremental-cache
+  // override reads (see open-next.config.ts).
+  "r2_buckets": [
+    {
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
+      "bucket_name": "groundbreak-inc-cache",
+    },
+  ],
+  // Secrets (set with `wrangler secret put NAME`): DATABASE_URL, BETTER_AUTH_SECRET.
 }
