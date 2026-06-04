@@ -28,6 +28,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable} ${spaceGrotesk.variable}`}>
+      <head>
+        {/* Ahrefs Web Analytics. React 19 also hoists this into <head>; the explicit
+            placement guarantees it's in the server-rendered HTML for detection. */}
+        <script src="https://analytics.ahrefs.com/analytics.js" data-key="NT0d4OM0ROL4WtoqmAXB3Q" async />
+      </head>
       <body className="min-h-dvh bg-paper font-sans text-ink antialiased">
         <ToastProvider>{children}</ToastProvider>
       </body>
